@@ -17,6 +17,10 @@ public enum GameBoxType {
 
     private final GameBoxType nextType;
 
+    public GameBoxType getNextType() {
+        return nextType;
+    }
+
     GameBoxType(GameBoxType nextType) {
         this.nextType = nextType;
     }
