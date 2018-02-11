@@ -4,15 +4,21 @@ package io.kadach.model;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.Random;
+
+import static io.kadach.util.Constants.GAME_FIELD_SIZE;
 
 public class GameField {
 
     private GameBox[][] fieldMatrix;
+    private boolean gameOver;
 
     public GameField() {
-        fieldMatrix = new GameBox[4][4];
-        gennerateBoxes();
+        this.fieldMatrix = new GameBox[GAME_FIELD_SIZE][GAME_FIELD_SIZE];
+        this.gameOver = false;
+        generateBox(4);
         printMatrix();
     }
 
@@ -20,114 +26,111 @@ public class GameField {
         return fieldMatrix;
     }
 
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
     public void handleInput() {
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
             upPressed();
-            gennerateBoxes();
+            generateBox(1);
+            checkGameOver();
             printMatrix();
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
             leftPressed();
-            gennerateBoxes();
+            generateBox(1);
+            checkGameOver();
             printMatrix();
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
             rightPressed();
-            gennerateBoxes();
+            generateBox(1);
+            checkGameOver();
             printMatrix();
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
             downPressed();
-            gennerateBoxes();
+            generateBox(1);
+            checkGameOver();
             printMatrix();
         }
     }
 
     private void leftPressed() {
         for (int i = 0; i < fieldMatrix.length; i++) {
-            for (int j = 1; j < fieldMatrix[i].length; j++) {
-                if (fieldMatrix[i][j - 1] == null) {
-                    for (int k = j; k < fieldMatrix[i].length; k++) {
-                        fieldMatrix[i][k - 1] = fieldMatrix[i][k];
-                        fieldMatrix[i][k] = null;
-                    }
-                    continue;
-                }
-                if (fieldMatrix[i][j] == null) {
-                    continue;
-                }
-                if (fieldMatrix[i][j].getType() == fieldMatrix[i][j - 1].getType()) {
-                    fieldMatrix[i][j - 1] = new GameBox(fieldMatrix[i][j].getType().getNextType());
-                    fieldMatrix[i][j] = null;
-                }
-            }
-        }
-    }
-
-    private void upPressed() {
-        for (int j = 0; j < fieldMatrix[0].length; j++) {
-            for (int i = 1; i < fieldMatrix.length; i++) {
-                if (fieldMatrix[i - 1][j] == null) {
-                    for (int k = i; k < fieldMatrix.length; k++) {
-                        fieldMatrix[k - 1][j] = fieldMatrix[k][j];
-                        fieldMatrix[k][j] = null;
-                    }
-                    continue;
-                }
-                if (fieldMatrix[i][j] == null) {
-                    continue;
-                }
-                if (fieldMatrix[i][j].getType() == fieldMatrix[i - 1][j].getType()) {
-                    fieldMatrix[i - 1][j] = new GameBox(fieldMatrix[i][j].getType().getNextType());
-                    fieldMatrix[i][j] = null;
-                }
-            }
-        }
-    }
-
-    private void downPressed() {
-        for (int j = 0; j < fieldMatrix[0].length; j++) {
-            for (int i = fieldMatrix.length - 2; i >= 0; i--) {
-                if (fieldMatrix[i + 1][j] == null) {
-                    for (int k = i; k >= 0; k--) {
-                        fieldMatrix[k + 1][j] = fieldMatrix[k][j];
-                        fieldMatrix[k][j] = null;
-                    }
-                    continue;
-                }
-                if (fieldMatrix[i][j] == null) {
-                    continue;
-                }
-                if (fieldMatrix[i][j].getType() == fieldMatrix[i + 1][j].getType()) {
-                    fieldMatrix[i + 1][j] = new GameBox(fieldMatrix[i][j].getType().getNextType());
-                    fieldMatrix[i][j] = null;
-                }
+            GameBox[] newRow = calculateNewRow(fieldMatrix[i]);
+            for (int j = 0; j < fieldMatrix[i].length; j++) {
+                fieldMatrix[i][j] = newRow[j];
             }
         }
     }
 
     private void rightPressed() {
         for (int i = 0; i < fieldMatrix.length; i++) {
-            for (int j = fieldMatrix[i].length - 2; j >= 0; j--) {
-                if (fieldMatrix[i][j + 1] == null) {
-                    for (int k = j; k >= 0; k--) {
-                        fieldMatrix[i][k + 1] = fieldMatrix[i][k];
-                        fieldMatrix[i][k] = null;
-                    }
-                    continue;
-                }
-                if (fieldMatrix[i][j] == null) {
-                    continue;
-                }
-                if (fieldMatrix[i][j].getType() == fieldMatrix[i][j + 1].getType()) {
-                    fieldMatrix[i][j + 1] = new GameBox(fieldMatrix[i][j].getType().getNextType());
-                    fieldMatrix[i][j] = null;
-                }
+            GameBox[] oldRow = ArrayUtils.clone(fieldMatrix[i]);
+            ArrayUtils.reverse(oldRow);
+            GameBox[] newRow = calculateNewRow(oldRow);
+            ArrayUtils.reverse(newRow);
+            for (int j = 0; j < fieldMatrix[i].length; j++) {
+                fieldMatrix[i][j] = newRow[j];
             }
         }
     }
 
+    private void upPressed() {
+        for (int j = 0; j < fieldMatrix[0].length; j++) {
+            GameBox[] oldRow = getColumn(fieldMatrix, j);
+            GameBox[] newRow = calculateNewRow(oldRow);
+            for (int i = 0; i < fieldMatrix.length; i++) {
+                fieldMatrix[i][j] = newRow[i];
+            }
+        }
+    }
+
+    private void downPressed() {
+        for (int j = 0; j < fieldMatrix[0].length; j++) {
+            GameBox[] oldRow = getColumn(fieldMatrix, j);
+            ArrayUtils.reverse(oldRow);
+            GameBox[] newRow = calculateNewRow(oldRow);
+            ArrayUtils.reverse(newRow);
+            for (int i = 0; i < fieldMatrix.length; i++) {
+                fieldMatrix[i][j] = newRow[i];
+            }
+        }
+    }
+
+    private GameBox[] calculateNewRow(GameBox[] oldRow) {
+        GameBox[] newRow = new GameBox[oldRow.length];
+        GameBox lastRowBox = null;
+        int indexOfLast = -1;
+        for (GameBox box : oldRow) {
+            if (box == null) {
+                continue;
+            }
+            if (lastRowBox != null && box.getType().equals(lastRowBox.getType())) {
+                lastRowBox = new GameBox(box.getType().getNext());
+                newRow[indexOfLast] = lastRowBox;
+                continue;
+            }
+            indexOfLast++;
+            lastRowBox = box;
+            newRow[indexOfLast] = lastRowBox;
+        }
+
+        return newRow;
+    }
+
+    private GameBox[] getColumn(GameBox[][] matrix, int columnNumber) {
+        GameBox[] column = new GameBox[matrix.length];
+        for (int i = 0; i < matrix.length; i++) {
+            column[i] = matrix[i][columnNumber];
+        }
+        return column;
+    }
+
     private void printMatrix() {
+        Gdx.app.log("GO:", String.valueOf(gameOver));
         for (GameBox[] row : fieldMatrix) {
             String listString = "|";
             for (GameBox s : row) {
@@ -142,17 +145,28 @@ public class GameField {
         Gdx.app.log("", "----------------------------------");
     }
 
-    private void gennerateBoxes() {
-        int count = 2;
+    private void generateBox(int count) {
         Random random = new Random();
-        while (count != 0) {
-            int i = random.nextInt(fieldMatrix.length - 1);
-            int j = random.nextInt(fieldMatrix[0].length - 1);
+        while (count > 0) {
+            int i = random.nextInt(fieldMatrix.length);
+            int j = random.nextInt(fieldMatrix[0].length);
             if (fieldMatrix[i][j] == null) {
-                fieldMatrix[i][j] = new GameBox(GameBoxType._2);
-                count --;
+                fieldMatrix[i][j] = new GameBox();
+                count--;
             }
         }
+    }
+
+    private void checkGameOver() {
+        boolean placeLeft = false;
+        for (GameBox[] row : fieldMatrix) {
+            for (GameBox box : row) {
+                if (box == null) {
+                    placeLeft = true;
+                }
+            }
+        }
+        this.gameOver = !placeLeft;
     }
 
 }

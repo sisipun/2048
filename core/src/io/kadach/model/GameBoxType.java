@@ -15,14 +15,14 @@ public enum GameBoxType {
     _4(_8),
     _2(_4);
 
-    private final GameBoxType nextType;
+    private final GameBoxType next;
 
-    public GameBoxType getNextType() {
-        return nextType;
+    public GameBoxType getNext() {
+        return next;
     }
 
-    GameBoxType(GameBoxType nextType) {
-        this.nextType = nextType;
+    GameBoxType(GameBoxType next) {
+        this.next = next;
     }
 
 }
