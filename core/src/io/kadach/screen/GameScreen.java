@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.Align;
 
 import io.kadach.model.GameBox;
 import io.kadach.model.GameField;
+import io.kadach.util.Constants;
 
 import static io.kadach.util.Constants.GAME_HEIGHT;
 import static io.kadach.util.Constants.GAME_WIDTH;
@@ -37,7 +38,6 @@ public class GameScreen extends ScreenAdapter {
 
         camera.update();
         batch.setProjectionMatrix(camera.combined);
-//        Gdx.app.log("", "x: " + camera.position.x + " y: " + camera.position.y + " vW: " + camera.viewportWidth + " vH: " + camera.viewportHeight);
 
         gameField.handleInput();
 
@@ -51,13 +51,24 @@ public class GameScreen extends ScreenAdapter {
                 font.draw(
                         batch,
                         fieldMatrix[i][j].getType().name(),
-                        ((camera.viewportWidth / 4)  * (j + 1)) - 75,
-                        ((camera.viewportHeight / 4) * (4 - i)) - 100,
+                        ((camera.viewportWidth / 4)  * (j + 1)) - (GAME_WIDTH / 8),
+                        ((camera.viewportHeight / 4) * (4 - i)) - (GAME_HEIGHT / 8),
                         0,
                         Align.center,
                         false
                 );
             }
+        }
+        if (gameField.isGameOver()) {
+            font.draw(
+                    batch,
+                    Constants.GAME_OVER_MESSAGE,
+                    camera.viewportWidth / 2,
+                    camera.viewportHeight / 2,
+                    0,
+                    Align.center,
+                    false
+            );
         }
         batch.end();
     }
