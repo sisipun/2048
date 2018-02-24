@@ -3,11 +3,7 @@ package io.kadach.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Align;
 
 import io.kadach.model.GameBox;
@@ -19,42 +15,31 @@ import static io.kadach.util.Constants.GAME_WIDTH;
 import static io.kadach.util.Constants.PREFERENCES_HIGH_SCORE_KEY;
 import static io.kadach.util.Constants.PREFERENCES_KEY;
 
-public class GameScreen extends ScreenAdapter {
+public class GameScreen extends BaseScreen {
 
     private final GameField gameField;
     private final BitmapFont font;
-    private final SpriteBatch batch;
-    private final OrthographicCamera camera;
     private int highScore;
     private final Preferences preferences;
 
     public GameScreen() {
         this.gameField = new GameField();
         this.font = new BitmapFont();
-        this.batch = new SpriteBatch();
-        this.camera = new OrthographicCamera();
         this.preferences = Gdx.app.getPreferences(PREFERENCES_KEY);
         this.highScore = preferences.getInteger(PREFERENCES_HIGH_SCORE_KEY);
-        camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
     }
 
     @Override
-    public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
-
-        gameField.handleInput();
-
+    protected void update(Float delta) {
         if (gameField.getScore() > highScore) {
             highScore = gameField.getScore();
             preferences.putInteger(PREFERENCES_HIGH_SCORE_KEY, highScore);
             preferences.flush();
         }
+    }
 
-        batch.begin();
+    @Override
+    protected void render() {
         font.draw(
                 batch,
                 String.format(Constants.SCORE_MESSAGE_TEMPLATE, gameField.getScore(), highScore),
@@ -92,7 +77,16 @@ public class GameScreen extends ScreenAdapter {
                     false
             );
         }
-        batch.end();
+    }
+
+    @Override
+    protected void handleInput() {
+        gameField.handleInput();
+    }
+
+    @Override
+    protected void screenDispose() {
+        font.dispose();
     }
 
 }
