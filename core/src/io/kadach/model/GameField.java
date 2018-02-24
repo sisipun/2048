@@ -2,24 +2,36 @@ package io.kadach.model;
 
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
+import static com.badlogic.gdx.Input.Keys.DOWN;
+import static com.badlogic.gdx.Input.Keys.LEFT;
+import static com.badlogic.gdx.Input.Keys.RIGHT;
+import static com.badlogic.gdx.Input.Keys.UP;
 import static io.kadach.util.Constants.GAME_FIELD_SIZE;
+import static java.lang.System.arraycopy;
+import static java.util.Arrays.deepEquals;
+import static org.apache.commons.lang3.ArrayUtils.*;
 
 public class GameField {
 
     private GameBox[][] fieldMatrix;
     private GameBox[][] previousTurnFieldMatrix;
     private boolean gameOver;
+    private int score;
+    private final List<GameBox> changedBoxes;
 
     public GameField() {
         this.fieldMatrix = new GameBox[GAME_FIELD_SIZE][GAME_FIELD_SIZE];
+        this.previousTurnFieldMatrix = new GameBox[GAME_FIELD_SIZE][GAME_FIELD_SIZE];
         this.gameOver = false;
+        this.score = 0;
+        this.changedBoxes = new ArrayList<GameBox>();
         generateBox(4);
     }
 
@@ -31,37 +43,53 @@ public class GameField {
         return gameOver;
     }
 
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
     public void handleInput() {
         if (isFieldChanged()) {
+            calculateScore();
             generateBox(1);
             checkGameOver();
+            changedBoxes.clear();
+        }
+    }
+
+    private void calculateScore() {
+        for (GameBox box : changedBoxes) {
+            score += box.getType().getPoints();
         }
     }
 
     private boolean isFieldChanged() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
+        if (Gdx.input.isKeyJustPressed(UP)) {
             GameBox[][] newMatrix = onUpPressed();
             previousTurnFieldMatrix = copy(fieldMatrix);
             fieldMatrix = newMatrix;
-            return !Arrays.deepEquals(previousTurnFieldMatrix, fieldMatrix);
+            return !deepEquals(previousTurnFieldMatrix, fieldMatrix);
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
+        if (Gdx.input.isKeyJustPressed(LEFT)) {
             GameBox[][] newMatrix = onLeftPressed();
             previousTurnFieldMatrix = copy(fieldMatrix);
             fieldMatrix = newMatrix;
-            return !Arrays.deepEquals(previousTurnFieldMatrix, fieldMatrix);
+            return !deepEquals(previousTurnFieldMatrix, fieldMatrix);
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
+        if (Gdx.input.isKeyJustPressed(RIGHT)) {
             GameBox[][] newMatrix = onRightPressed();
             previousTurnFieldMatrix = copy(fieldMatrix);
             fieldMatrix = newMatrix;
-            return !Arrays.deepEquals(previousTurnFieldMatrix, fieldMatrix);
+            return !deepEquals(previousTurnFieldMatrix, fieldMatrix);
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
+        if (Gdx.input.isKeyJustPressed(DOWN)) {
             GameBox[][] newMatrix = onDownPressed();
             previousTurnFieldMatrix = copy(fieldMatrix);
             fieldMatrix = newMatrix;
-            return !Arrays.deepEquals(previousTurnFieldMatrix, fieldMatrix);
+            return !deepEquals(previousTurnFieldMatrix, fieldMatrix);
         }
         return false;
     }
@@ -70,7 +98,7 @@ public class GameField {
         GameBox[][] newMatrix = copy(fieldMatrix);
         for (GameBox[] row : newMatrix) {
             GameBox[] newRow = calculateNewRow(row);
-            System.arraycopy(newRow, 0, row, 0, row.length);
+            arraycopy(newRow, 0, row, 0, row.length);
         }
         return newMatrix;
     }
@@ -79,10 +107,10 @@ public class GameField {
         GameBox[][] newMatrix = copy(fieldMatrix);
         for (GameBox[] row : newMatrix) {
             GameBox[] oldRow = ArrayUtils.clone(row);
-            ArrayUtils.reverse(oldRow);
+            reverse(oldRow);
             GameBox[] newRow = calculateNewRow(oldRow);
-            ArrayUtils.reverse(newRow);
-            System.arraycopy(newRow, 0, row, 0, row.length);
+            reverse(newRow);
+            arraycopy(newRow, 0, row, 0, row.length);
         }
         return newMatrix;
     }
@@ -103,9 +131,9 @@ public class GameField {
         GameBox[][] newMatrix = copy(fieldMatrix);
         for (int j = 0; j < newMatrix[0].length; j++) {
             GameBox[] oldRow = getColumn(newMatrix, j);
-            ArrayUtils.reverse(oldRow);
+            reverse(oldRow);
             GameBox[] newRow = calculateNewRow(oldRow);
-            ArrayUtils.reverse(newRow);
+            reverse(newRow);
             for (int i = 0; i < newMatrix.length; i++) {
                 newMatrix[i][j] = newRow[i];
             }
@@ -123,6 +151,7 @@ public class GameField {
             }
             if (lastRowBox != null && box.getType().equals(lastRowBox.getType())) {
                 lastRowBox = new GameBox(box.getType().getNext());
+                changedBoxes.add(lastRowBox);
                 newRow[indexOfLast] = lastRowBox;
                 continue;
             }
@@ -164,19 +193,14 @@ public class GameField {
             }
         }
         GameBox[][] onUpPressed = onUpPressed();
-        GameBox[][] onDownPressed = onDownPressed();
         GameBox[][] onLeftPressed = onLeftPressed();
-        GameBox[][] onRightPressed = onRightPressed();
-        this.gameOver = !placeLeft
-                && Arrays.deepEquals(onUpPressed, onDownPressed)
-                && Arrays.deepEquals(onDownPressed, onLeftPressed)
-                && Arrays.deepEquals(onLeftPressed, onRightPressed);
+        this.gameOver = !placeLeft && deepEquals(onUpPressed, onLeftPressed);
     }
 
     private GameBox[][] copy(GameBox[][] fieldMatrix) {
         GameBox[][] copyMatrix = new GameBox[fieldMatrix.length][fieldMatrix[0].length];
         for (int i = 0; i < fieldMatrix.length; i++) {
-            System.arraycopy(fieldMatrix[i], 0, copyMatrix[i], 0, fieldMatrix[i].length);
+            arraycopy(fieldMatrix[i], 0, copyMatrix[i], 0, fieldMatrix[i].length);
         }
         return copyMatrix;
     }
