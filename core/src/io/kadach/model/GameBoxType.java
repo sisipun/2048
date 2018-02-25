@@ -13,7 +13,7 @@ public enum GameBoxType {
     _16(_32, 16),
     _8(_16, 8),
     _4(_8, 4),
-    _2(_4, 2);
+    _2(_4, 0);
 
     private final GameBoxType next;
     private final int points;

@@ -43,7 +43,16 @@ public class GameScreen extends BaseScreen {
         font.draw(
                 batch,
                 String.format(Constants.SCORE_MESSAGE_TEMPLATE, gameField.getScore(), highScore),
-                camera.viewportWidth / 2,
+                camera.viewportWidth / 2 - camera.viewportWidth / 4,
+                camera.viewportHeight - (GAME_HEIGHT / 16),
+                0,
+                Align.center,
+                false
+        );
+        font.draw(
+                batch,
+                String.format(Constants.RESET_ATTEMPT_COUNT_MESSAGE_TEMPLATE, gameField.getResetAttemptCount()),
+                camera.viewportWidth / 2 + camera.viewportWidth / 4,
                 camera.viewportHeight - (GAME_HEIGHT / 16),
                 0,
                 Align.center,

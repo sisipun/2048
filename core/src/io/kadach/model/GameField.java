@@ -5,18 +5,17 @@ import com.badlogic.gdx.Gdx;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import static com.badlogic.gdx.Input.Keys.DOWN;
 import static com.badlogic.gdx.Input.Keys.LEFT;
+import static com.badlogic.gdx.Input.Keys.R;
 import static com.badlogic.gdx.Input.Keys.RIGHT;
 import static com.badlogic.gdx.Input.Keys.UP;
 import static io.kadach.util.Constants.GAME_FIELD_SIZE;
 import static java.lang.System.arraycopy;
 import static java.util.Arrays.deepEquals;
-import static org.apache.commons.lang3.ArrayUtils.*;
+import static org.apache.commons.lang3.ArrayUtils.reverse;
 
 public class GameField {
 
@@ -24,15 +23,15 @@ public class GameField {
     private GameBox[][] previousTurnFieldMatrix;
     private boolean gameOver;
     private int score;
-    private final List<GameBox> changedBoxes;
+    private int resetAttemptCount;
 
     public GameField() {
         this.fieldMatrix = new GameBox[GAME_FIELD_SIZE][GAME_FIELD_SIZE];
-        this.previousTurnFieldMatrix = new GameBox[GAME_FIELD_SIZE][GAME_FIELD_SIZE];
+        generateBox(4);
+        this.previousTurnFieldMatrix = copy(fieldMatrix);
         this.gameOver = false;
         this.score = 0;
-        this.changedBoxes = new ArrayList<GameBox>();
-        generateBox(4);
+        this.resetAttemptCount = 3;
     }
 
     public GameBox[][] getFieldMatrix() {
@@ -47,51 +46,37 @@ public class GameField {
         return score;
     }
 
-    public void setScore(int score) {
-        this.score = score;
+    public int getResetAttemptCount() {
+        return resetAttemptCount;
     }
 
     public void handleInput() {
-        if (isFieldChanged()) {
-            calculateScore();
+        GameBox[][] newMatrix = getNewMatrix();
+        if (null != newMatrix && !deepEquals(newMatrix, fieldMatrix)) {
+            previousTurnFieldMatrix = copy(fieldMatrix);
+            fieldMatrix = newMatrix;
+            score = calculateScore(fieldMatrix);
             generateBox(1);
             checkGameOver();
-            changedBoxes.clear();
+        }
+        if (Gdx.input.isKeyPressed(R)) {
+            resetLastAction();
         }
     }
 
-    private void calculateScore() {
-        for (GameBox box : changedBoxes) {
-            score += box.getType().getPoints();
-        }
+    private GameBox[][] getNewMatrix() {
+        if (Gdx.input.isKeyJustPressed(UP)) return onUpPressed();
+        if (Gdx.input.isKeyJustPressed(LEFT)) return onLeftPressed();
+        if (Gdx.input.isKeyJustPressed(RIGHT)) return onRightPressed();
+        if (Gdx.input.isKeyJustPressed(DOWN)) return onDownPressed();
+        return null;
     }
 
-    private boolean isFieldChanged() {
-        if (Gdx.input.isKeyJustPressed(UP)) {
-            GameBox[][] newMatrix = onUpPressed();
-            previousTurnFieldMatrix = copy(fieldMatrix);
-            fieldMatrix = newMatrix;
-            return !deepEquals(previousTurnFieldMatrix, fieldMatrix);
+    private void resetLastAction() {
+        if (resetAttemptCount > 0 && !deepEquals(previousTurnFieldMatrix, fieldMatrix)) {
+            resetAttemptCount--;
+            fieldMatrix = copy(previousTurnFieldMatrix);
         }
-        if (Gdx.input.isKeyJustPressed(LEFT)) {
-            GameBox[][] newMatrix = onLeftPressed();
-            previousTurnFieldMatrix = copy(fieldMatrix);
-            fieldMatrix = newMatrix;
-            return !deepEquals(previousTurnFieldMatrix, fieldMatrix);
-        }
-        if (Gdx.input.isKeyJustPressed(RIGHT)) {
-            GameBox[][] newMatrix = onRightPressed();
-            previousTurnFieldMatrix = copy(fieldMatrix);
-            fieldMatrix = newMatrix;
-            return !deepEquals(previousTurnFieldMatrix, fieldMatrix);
-        }
-        if (Gdx.input.isKeyJustPressed(DOWN)) {
-            GameBox[][] newMatrix = onDownPressed();
-            previousTurnFieldMatrix = copy(fieldMatrix);
-            fieldMatrix = newMatrix;
-            return !deepEquals(previousTurnFieldMatrix, fieldMatrix);
-        }
-        return false;
     }
 
     private GameBox[][] onLeftPressed() {
@@ -151,7 +136,6 @@ public class GameField {
             }
             if (lastRowBox != null && box.getType().equals(lastRowBox.getType())) {
                 lastRowBox = new GameBox(box.getType().getNext());
-                changedBoxes.add(lastRowBox);
                 newRow[indexOfLast] = lastRowBox;
                 continue;
             }
@@ -161,6 +145,18 @@ public class GameField {
         }
 
         return newRow;
+    }
+
+    private int calculateScore(GameBox[][] matrix) {
+        int score = 0;
+        for (GameBox[] row : matrix) {
+            for (GameBox box : row) {
+                if (null != box) {
+                    score += box.getType().getPoints();
+                }
+            }
+        }
+        return score;
     }
 
     private GameBox[] getColumn(GameBox[][] matrix, int columnNumber) {
