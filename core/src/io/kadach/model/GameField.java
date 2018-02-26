@@ -9,6 +9,7 @@ import java.util.Random;
 
 import static com.badlogic.gdx.Input.Keys.DOWN;
 import static com.badlogic.gdx.Input.Keys.LEFT;
+import static com.badlogic.gdx.Input.Keys.Q;
 import static com.badlogic.gdx.Input.Keys.R;
 import static com.badlogic.gdx.Input.Keys.RIGHT;
 import static com.badlogic.gdx.Input.Keys.UP;
@@ -51,120 +52,28 @@ public class GameField {
     }
 
     public void handleInput() {
-        GameBox[][] newMatrix = getNewMatrix();
-        if (null != newMatrix && !deepEquals(newMatrix, fieldMatrix)) {
+        CalculatedMatrix calculatedMatrix = calculateNewMatrix();
+        if (null != calculatedMatrix && !deepEquals(calculatedMatrix.getMatrix(), fieldMatrix)) {
             previousTurnFieldMatrix = copy(fieldMatrix);
-            fieldMatrix = newMatrix;
-            score = calculateScore(fieldMatrix);
+            fieldMatrix = calculatedMatrix.getMatrix();
+            score += calculatedMatrix.getScore();
             generateBox(1);
             checkGameOver();
         }
-        if (Gdx.input.isKeyPressed(R)) {
+        if (Gdx.input.isKeyJustPressed(R)) {
             resetLastAction();
+        }
+        if (Gdx.input.isKeyJustPressed(Q)) {
+            restart();
         }
     }
 
-    private GameBox[][] getNewMatrix() {
+    private CalculatedMatrix calculateNewMatrix() {
         if (Gdx.input.isKeyJustPressed(UP)) return onUpPressed();
         if (Gdx.input.isKeyJustPressed(LEFT)) return onLeftPressed();
         if (Gdx.input.isKeyJustPressed(RIGHT)) return onRightPressed();
         if (Gdx.input.isKeyJustPressed(DOWN)) return onDownPressed();
         return null;
-    }
-
-    private void resetLastAction() {
-        if (resetAttemptCount > 0 && !deepEquals(previousTurnFieldMatrix, fieldMatrix)) {
-            resetAttemptCount--;
-            fieldMatrix = copy(previousTurnFieldMatrix);
-        }
-    }
-
-    private GameBox[][] onLeftPressed() {
-        GameBox[][] newMatrix = copy(fieldMatrix);
-        for (GameBox[] row : newMatrix) {
-            GameBox[] newRow = calculateNewRow(row);
-            arraycopy(newRow, 0, row, 0, row.length);
-        }
-        return newMatrix;
-    }
-
-    private GameBox[][] onRightPressed() {
-        GameBox[][] newMatrix = copy(fieldMatrix);
-        for (GameBox[] row : newMatrix) {
-            GameBox[] oldRow = ArrayUtils.clone(row);
-            reverse(oldRow);
-            GameBox[] newRow = calculateNewRow(oldRow);
-            reverse(newRow);
-            arraycopy(newRow, 0, row, 0, row.length);
-        }
-        return newMatrix;
-    }
-
-    private GameBox[][] onUpPressed() {
-        GameBox[][] newMatrix = copy(fieldMatrix);
-        for (int j = 0; j < newMatrix[0].length; j++) {
-            GameBox[] oldRow = getColumn(newMatrix, j);
-            GameBox[] newRow = calculateNewRow(oldRow);
-            for (int i = 0; i < newMatrix.length; i++) {
-                newMatrix[i][j] = newRow[i];
-            }
-        }
-        return newMatrix;
-    }
-
-    private GameBox[][] onDownPressed() {
-        GameBox[][] newMatrix = copy(fieldMatrix);
-        for (int j = 0; j < newMatrix[0].length; j++) {
-            GameBox[] oldRow = getColumn(newMatrix, j);
-            reverse(oldRow);
-            GameBox[] newRow = calculateNewRow(oldRow);
-            reverse(newRow);
-            for (int i = 0; i < newMatrix.length; i++) {
-                newMatrix[i][j] = newRow[i];
-            }
-        }
-        return newMatrix;
-    }
-
-    private GameBox[] calculateNewRow(GameBox[] oldRow) {
-        GameBox[] newRow = new GameBox[oldRow.length];
-        GameBox lastRowBox = null;
-        int indexOfLast = -1;
-        for (GameBox box : oldRow) {
-            if (box == null) {
-                continue;
-            }
-            if (lastRowBox != null && box.getType().equals(lastRowBox.getType())) {
-                lastRowBox = new GameBox(box.getType().getNext());
-                newRow[indexOfLast] = lastRowBox;
-                continue;
-            }
-            indexOfLast++;
-            lastRowBox = box;
-            newRow[indexOfLast] = lastRowBox;
-        }
-
-        return newRow;
-    }
-
-    private int calculateScore(GameBox[][] matrix) {
-        int score = 0;
-        for (GameBox[] row : matrix) {
-            for (GameBox box : row) {
-                if (null != box) {
-                    score += box.getType().getPoints();
-                }
-            }
-        }
-        return score;
-    }
-
-    private GameBox[] getColumn(GameBox[][] matrix, int columnNumber) {
-        GameBox[] column = new GameBox[matrix.length];
-        for (int i = 0; i < matrix.length; i++) {
-            column[i] = matrix[i][columnNumber];
-        }
-        return column;
     }
 
     private void generateBox(int count) {
@@ -188,9 +97,115 @@ public class GameField {
                 }
             }
         }
-        GameBox[][] onUpPressed = onUpPressed();
-        GameBox[][] onLeftPressed = onLeftPressed();
+        GameBox[][] onUpPressed = onUpPressed().getMatrix();
+        GameBox[][] onLeftPressed = onLeftPressed().getMatrix();
         this.gameOver = !placeLeft && deepEquals(onUpPressed, onLeftPressed);
+    }
+
+    private void resetLastAction() {
+        if (resetAttemptCount > 0 && !deepEquals(previousTurnFieldMatrix, fieldMatrix)) {
+            resetAttemptCount--;
+            fieldMatrix = copy(previousTurnFieldMatrix);
+        }
+    }
+
+    private void restart() {
+        this.fieldMatrix = new GameBox[GAME_FIELD_SIZE][GAME_FIELD_SIZE];
+        generateBox(4);
+        this.previousTurnFieldMatrix = copy(fieldMatrix);
+        this.gameOver = false;
+        this.score = 0;
+        this.resetAttemptCount = 3;
+    }
+
+    private CalculatedMatrix onLeftPressed() {
+        GameBox[][] newMatrix = copy(fieldMatrix);
+        int score = 0;
+        for (GameBox[] row : newMatrix) {
+            CalculatedRow calculatedRow = calculateNewRow(row);
+            score += calculatedRow.getScore();
+            GameBox[] newRow = calculatedRow.getRow();
+            arraycopy(newRow, 0, row, 0, row.length);
+        }
+        return new CalculatedMatrix(newMatrix, score);
+    }
+
+    private CalculatedMatrix onRightPressed() {
+        GameBox[][] newMatrix = copy(fieldMatrix);
+        int score = 0;
+        for (GameBox[] row : newMatrix) {
+            GameBox[] oldRow = ArrayUtils.clone(row);
+            reverse(oldRow);
+            CalculatedRow calculatedRow = calculateNewRow(oldRow);
+            score += calculatedRow.getScore();
+            GameBox[] newRow = calculatedRow.getRow();
+            reverse(newRow);
+            arraycopy(newRow, 0, row, 0, row.length);
+        }
+        return new CalculatedMatrix(newMatrix, score);
+    }
+
+    private CalculatedMatrix onUpPressed() {
+        GameBox[][] newMatrix = copy(fieldMatrix);
+        int score = 0;
+        for (int j = 0; j < newMatrix[0].length; j++) {
+            GameBox[] oldRow = getColumn(newMatrix, j);
+            CalculatedRow calculatedRow = calculateNewRow(oldRow);
+            score += calculatedRow.getScore();
+            GameBox[] newRow = calculatedRow.getRow();
+            for (int i = 0; i < newMatrix.length; i++) {
+                newMatrix[i][j] = newRow[i];
+            }
+        }
+        return new CalculatedMatrix(newMatrix, score);
+    }
+
+    private CalculatedMatrix onDownPressed() {
+        GameBox[][] newMatrix = copy(fieldMatrix);
+        int score = 0;
+        for (int j = 0; j < newMatrix[0].length; j++) {
+            GameBox[] oldRow = getColumn(newMatrix, j);
+            reverse(oldRow);
+            CalculatedRow calculatedRow = calculateNewRow(oldRow);
+            score += calculatedRow.getScore();
+            GameBox[] newRow = calculatedRow.getRow();
+            reverse(newRow);
+            for (int i = 0; i < newMatrix.length; i++) {
+                newMatrix[i][j] = newRow[i];
+            }
+        }
+        return new CalculatedMatrix(newMatrix, score);
+    }
+
+    private CalculatedRow calculateNewRow(GameBox[] oldRow) {
+        GameBox[] newRow = new GameBox[oldRow.length];
+        int score = 0;
+        GameBox lastRowBox = null;
+        int indexOfLast = -1;
+        for (GameBox box : oldRow) {
+            if (box == null) {
+                continue;
+            }
+            if (lastRowBox != null && box.getType().equals(lastRowBox.getType())) {
+                lastRowBox = new GameBox(box.getType().getNext());
+                score += lastRowBox.getType().getPoints();
+                newRow[indexOfLast] = lastRowBox;
+                continue;
+            }
+            indexOfLast++;
+            lastRowBox = box;
+            newRow[indexOfLast] = lastRowBox;
+        }
+
+        return new CalculatedRow(newRow, score);
+    }
+
+    private GameBox[] getColumn(GameBox[][] matrix, int columnNumber) {
+        GameBox[] column = new GameBox[matrix.length];
+        for (int i = 0; i < matrix.length; i++) {
+            column[i] = matrix[i][columnNumber];
+        }
+        return column;
     }
 
     private GameBox[][] copy(GameBox[][] fieldMatrix) {
