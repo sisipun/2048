@@ -6,10 +6,18 @@ import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.Align;
 
+import io.kadach.model.ChangeFieldDestination;
 import io.kadach.model.GameBox;
 import io.kadach.model.GameField;
 import io.kadach.util.Constants;
 
+import static com.badlogic.gdx.Input.Keys.DOWN;
+import static com.badlogic.gdx.Input.Keys.LEFT;
+import static com.badlogic.gdx.Input.Keys.Q;
+import static com.badlogic.gdx.Input.Keys.R;
+import static com.badlogic.gdx.Input.Keys.RIGHT;
+import static com.badlogic.gdx.Input.Keys.UP;
+import static io.kadach.util.Constants.GAME_FIELD_SIZE;
 import static io.kadach.util.Constants.GAME_HEIGHT;
 import static io.kadach.util.Constants.GAME_WIDTH;
 import static io.kadach.util.Constants.PREFERENCES_HIGH_SCORE_KEY;
@@ -17,14 +25,14 @@ import static io.kadach.util.Constants.PREFERENCES_KEY;
 
 public class GameScreen extends BaseScreen {
 
-    private final GameField gameField;
     private final BitmapFont font;
+    private GameField gameField;
     private int highScore;
     private final Preferences preferences;
 
     public GameScreen() {
-        this.gameField = new GameField();
         this.font = new BitmapFont();
+        this.gameField = new GameField(GAME_FIELD_SIZE);
         this.preferences = Gdx.app.getPreferences(PREFERENCES_KEY);
         this.highScore = preferences.getInteger(PREFERENCES_HIGH_SCORE_KEY);
     }
@@ -90,7 +98,12 @@ public class GameScreen extends BaseScreen {
 
     @Override
     protected void handleInput() {
-        gameField.handleInput();
+        if (Gdx.input.isKeyJustPressed(R)) gameField.resetLastAction();
+        if (Gdx.input.isKeyJustPressed(Q)) gameField = new GameField(GAME_FIELD_SIZE);
+        if (Gdx.input.isKeyJustPressed(UP)) gameField.changeField(ChangeFieldDestination.UP);
+        if (Gdx.input.isKeyJustPressed(LEFT)) gameField.changeField(ChangeFieldDestination.LEFT);
+        if (Gdx.input.isKeyJustPressed(RIGHT)) gameField.changeField(ChangeFieldDestination.RIGHT);
+        if (Gdx.input.isKeyJustPressed(DOWN)) gameField.changeField(ChangeFieldDestination.DOWN);
     }
 
     @Override

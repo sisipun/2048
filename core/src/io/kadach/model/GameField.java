@@ -1,19 +1,14 @@
 package io.kadach.model;
 
 
-import com.badlogic.gdx.Gdx;
-
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Random;
 
-import static com.badlogic.gdx.Input.Keys.DOWN;
-import static com.badlogic.gdx.Input.Keys.LEFT;
-import static com.badlogic.gdx.Input.Keys.Q;
-import static com.badlogic.gdx.Input.Keys.R;
-import static com.badlogic.gdx.Input.Keys.RIGHT;
-import static com.badlogic.gdx.Input.Keys.UP;
-import static io.kadach.util.Constants.GAME_FIELD_SIZE;
+import static io.kadach.model.ChangeFieldDestination.DOWN;
+import static io.kadach.model.ChangeFieldDestination.LEFT;
+import static io.kadach.model.ChangeFieldDestination.RIGHT;
+import static io.kadach.model.ChangeFieldDestination.UP;
 import static java.lang.System.arraycopy;
 import static java.util.Arrays.deepEquals;
 import static org.apache.commons.lang3.ArrayUtils.reverse;
@@ -26,14 +21,6 @@ public class GameField {
     private int score;
     private int resetAttemptCount;
 
-    public GameField() {
-        this.fieldMatrix = new GameBox[GAME_FIELD_SIZE][GAME_FIELD_SIZE];
-        generateBox(4);
-        this.previousTurnFieldMatrix = copy(fieldMatrix);
-        this.gameOver = false;
-        this.score = 0;
-        this.resetAttemptCount = 3;
-    }
 
     public GameBox[][] getFieldMatrix() {
         return fieldMatrix;
@@ -51,29 +38,39 @@ public class GameField {
         return resetAttemptCount;
     }
 
-    public void handleInput() {
-        CalculatedMatrix calculatedMatrix = calculateNewMatrix();
-        if (null != calculatedMatrix && !deepEquals(calculatedMatrix.getMatrix(), fieldMatrix)) {
+    public GameField(int size) {
+        this.fieldMatrix = new GameBox[size][size];
+        generateBox(4);
+        this.previousTurnFieldMatrix = copy(fieldMatrix);
+        this.gameOver = false;
+        this.score = 0;
+        this.resetAttemptCount = 3;
+    }
+
+    public void resetLastAction() {
+        if (resetAttemptCount > 0 && !deepEquals(previousTurnFieldMatrix, fieldMatrix)) {
+            resetAttemptCount--;
+            fieldMatrix = copy(previousTurnFieldMatrix);
+        }
+    }
+
+    public void changeField(ChangeFieldDestination destination) {
+        CalculatedMatrix calculatedMatrix = calculateNewMatrix(destination);
+        if (!deepEquals(calculatedMatrix.getMatrix(), fieldMatrix)) {
             previousTurnFieldMatrix = copy(fieldMatrix);
             fieldMatrix = calculatedMatrix.getMatrix();
             score += calculatedMatrix.getScore();
             generateBox(1);
             checkGameOver();
         }
-        if (Gdx.input.isKeyJustPressed(R)) {
-            resetLastAction();
-        }
-        if (Gdx.input.isKeyJustPressed(Q)) {
-            restart();
-        }
     }
 
-    private CalculatedMatrix calculateNewMatrix() {
-        if (Gdx.input.isKeyJustPressed(UP)) return onUpPressed();
-        if (Gdx.input.isKeyJustPressed(LEFT)) return onLeftPressed();
-        if (Gdx.input.isKeyJustPressed(RIGHT)) return onRightPressed();
-        if (Gdx.input.isKeyJustPressed(DOWN)) return onDownPressed();
-        return null;
+    private CalculatedMatrix calculateNewMatrix(ChangeFieldDestination destination) {
+        if (destination.equals(UP)) return onUpPressed();
+        if (destination.equals(LEFT)) return onLeftPressed();
+        if (destination.equals(RIGHT)) return onRightPressed();
+        if (destination.equals(DOWN)) return onDownPressed();
+        throw new IllegalArgumentException("Illegal destination");
     }
 
     private void generateBox(int count) {
@@ -100,22 +97,6 @@ public class GameField {
         GameBox[][] onUpPressed = onUpPressed().getMatrix();
         GameBox[][] onLeftPressed = onLeftPressed().getMatrix();
         this.gameOver = !placeLeft && deepEquals(onUpPressed, onLeftPressed);
-    }
-
-    private void resetLastAction() {
-        if (resetAttemptCount > 0 && !deepEquals(previousTurnFieldMatrix, fieldMatrix)) {
-            resetAttemptCount--;
-            fieldMatrix = copy(previousTurnFieldMatrix);
-        }
-    }
-
-    private void restart() {
-        this.fieldMatrix = new GameBox[GAME_FIELD_SIZE][GAME_FIELD_SIZE];
-        generateBox(4);
-        this.previousTurnFieldMatrix = copy(fieldMatrix);
-        this.gameOver = false;
-        this.score = 0;
-        this.resetAttemptCount = 3;
     }
 
     private CalculatedMatrix onLeftPressed() {
