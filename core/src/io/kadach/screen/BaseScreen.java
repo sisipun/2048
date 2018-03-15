@@ -6,8 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import static io.kadach.util.Constants.GAME_HEIGHT;
-import static io.kadach.util.Constants.GAME_WIDTH;
+import static io.kadach.util.Constants.GAME_SIZE;
 
 
 public class BaseScreen extends ScreenAdapter {
@@ -18,7 +17,7 @@ public class BaseScreen extends ScreenAdapter {
     public BaseScreen() {
         this.batch = new SpriteBatch();
         this.camera = new OrthographicCamera();
-        camera.setToOrtho(false, GAME_WIDTH, GAME_HEIGHT);
+        camera.setToOrtho(false, GAME_SIZE, GAME_SIZE);
     }
 
     protected void update(Float delta) {}

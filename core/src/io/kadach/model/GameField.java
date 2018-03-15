@@ -1,6 +1,8 @@
 package io.kadach.model;
 
 
+import com.badlogic.gdx.graphics.Texture;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Random;
@@ -20,6 +22,7 @@ public class GameField {
     private boolean gameOver;
     private int score;
     private int resetAttemptCount;
+    private Texture texture;
 
 
     public GameBox[][] getFieldMatrix() {
@@ -38,6 +41,10 @@ public class GameField {
         return resetAttemptCount;
     }
 
+    public Texture getTexture() {
+        return texture;
+    }
+
     public GameField(int size) {
         this.fieldMatrix = new GameBox[size][size];
         generateBox(4);
@@ -45,6 +52,7 @@ public class GameField {
         this.gameOver = false;
         this.score = 0;
         this.resetAttemptCount = 3;
+        this.texture = new Texture("background.png");
     }
 
     public void resetLastAction() {
