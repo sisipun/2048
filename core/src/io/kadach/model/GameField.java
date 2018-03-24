@@ -46,6 +46,10 @@ public class GameField {
     }
 
     public GameField(int size) {
+        reset(size);
+    }
+
+    public void reset(int size) {
         this.fieldMatrix = new GameBox[size][size];
         generateBox(4);
         this.previousTurnFieldMatrix = copy(fieldMatrix);
