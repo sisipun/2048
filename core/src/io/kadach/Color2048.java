@@ -2,7 +2,7 @@ package io.kadach;
 
 import com.badlogic.gdx.Game;
 
-import io.kadach.screen.GameScreen;
+import io.kadach.view.GameScreen;
 
 public class Color2048 extends Game {
 

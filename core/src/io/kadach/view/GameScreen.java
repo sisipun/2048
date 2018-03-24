@@ -1,4 +1,4 @@
-package io.kadach.screen;
+package io.kadach.view;
 
 
 import com.badlogic.gdx.Gdx;
@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.utils.Align;
 
-import io.kadach.listener.GameScreenGestureListener;
+import io.kadach.controll.GameGestureListener;
 import io.kadach.model.ChangeFieldDestination;
 import io.kadach.model.GameBox;
 import io.kadach.model.GameField;
@@ -37,7 +37,7 @@ public class GameScreen extends BaseScreen {
         this.gameField = new GameField(GAME_FIELD_SIZE);
         this.preferences = Gdx.app.getPreferences(PREFERENCES_KEY);
         this.highScore = preferences.getInteger(PREFERENCES_HIGH_SCORE_KEY);
-        Gdx.input.setInputProcessor(new GestureDetector(new GameScreenGestureListener(gameField)));
+        Gdx.input.setInputProcessor(new GestureDetector(new GameGestureListener(gameField)));
     }
 
     @Override

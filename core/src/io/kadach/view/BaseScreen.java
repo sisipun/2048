@@ -1,4 +1,4 @@
-package io.kadach.screen;
+package io.kadach.view;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;

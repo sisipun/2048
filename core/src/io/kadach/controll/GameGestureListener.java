@@ -1,18 +1,19 @@
-package io.kadach.listener;
+package io.kadach.controll;
 
 
-import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 
 import io.kadach.model.ChangeFieldDestination;
 import io.kadach.model.GameField;
 
-public class GameScreenGestureListener implements GestureDetector.GestureListener {
+import static com.badlogic.gdx.input.GestureDetector.GestureListener;
+
+public class GameGestureListener implements GestureListener {
 
     private final GameField gameField;
 
 
-    public GameScreenGestureListener(GameField gameField) {
+    public GameGestureListener(GameField gameField) {
         this.gameField = gameField;
     }
 
