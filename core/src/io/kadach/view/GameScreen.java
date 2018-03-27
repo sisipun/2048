@@ -58,24 +58,6 @@ public class GameScreen extends BaseScreen {
                 GAME_SIZE,
                 GAME_SIZE
         );
-        /*font.draw(
-                batch,
-                String.format(Constants.SCORE_MESSAGE_TEMPLATE, gameField.getScore(), highScore),
-                camera.viewportWidth / 2 - camera.viewportWidth / 4,
-                camera.viewportHeight - (GAME_HEIGHT / 16),
-                0,
-                Align.center,
-                false
-        );
-        font.draw(
-                batch,
-                String.format(Constants.RESET_ATTEMPT_COUNT_MESSAGE_TEMPLATE, gameField.getResetAttemptCount()),
-                camera.viewportWidth / 2 + camera.viewportWidth / 4,
-                camera.viewportHeight - (GAME_HEIGHT / 16),
-                0,
-                Align.center,
-                false
-        );*/
         GameBox[][] fieldMatrix = gameField.getFieldMatrix();
         for (int i = 0; i < fieldMatrix.length; i++) {
             for (int j = 0; j < fieldMatrix[i].length; j++) {
@@ -89,15 +71,6 @@ public class GameScreen extends BaseScreen {
                         BOX_SIZE,
                         BOX_SIZE
                 );
-                /*font.draw(
-                        batch,
-                        fieldMatrix[i][j].getType().name(),
-                        ((camera.viewportWidth / 4) * (j + 1)) - (GAME_WIDTH / 8),
-                        ((camera.viewportHeight / 4) * (4 - i)) - (GAME_HEIGHT / 8),
-                        0,
-                        Align.center,
-                        false
-                );*/
             }
         }
         if (gameField.isGameOver()) {
