@@ -1,5 +1,6 @@
 package io.kadach.view;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
@@ -11,10 +12,12 @@ import static io.kadach.util.Constants.GAME_SIZE;
 
 public class BaseScreen extends ScreenAdapter {
 
+    protected final Game game;
     protected final SpriteBatch batch;
     protected final OrthographicCamera camera;
 
-    public BaseScreen() {
+    public BaseScreen(Game game) {
+        this.game = game;
         this.batch = new SpriteBatch();
         this.camera = new OrthographicCamera();
         camera.setToOrtho(false, GAME_SIZE, GAME_SIZE);

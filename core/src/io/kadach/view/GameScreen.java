@@ -1,6 +1,7 @@
 package io.kadach.view;
 
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -20,7 +21,6 @@ import static com.badlogic.gdx.Input.Keys.R;
 import static com.badlogic.gdx.Input.Keys.RIGHT;
 import static com.badlogic.gdx.Input.Keys.UP;
 import static io.kadach.util.Constants.BOX_SIZE;
-import static io.kadach.util.Constants.GAME_FIELD_SIZE;
 import static io.kadach.util.Constants.GAME_SIZE;
 import static io.kadach.util.Constants.PREFERENCES_HIGH_SCORE_KEY;
 import static io.kadach.util.Constants.PREFERENCES_KEY;
@@ -31,10 +31,14 @@ public class GameScreen extends BaseScreen {
     private GameField gameField;
     private int highScore;
     private final Preferences preferences;
+    private final int size;
 
-    public GameScreen() {
+
+    public GameScreen(Game game, int size) {
+        super(game);
+        this.size = size;
         this.font = new BitmapFont();
-        this.gameField = new GameField(GAME_FIELD_SIZE);
+        this.gameField = new GameField(size);
         this.preferences = Gdx.app.getPreferences(PREFERENCES_KEY);
         this.highScore = preferences.getInteger(PREFERENCES_HIGH_SCORE_KEY);
         Gdx.input.setInputProcessor(new GestureDetector(new GameGestureListener(gameField)));
@@ -89,7 +93,7 @@ public class GameScreen extends BaseScreen {
     @Override
     protected void handleInput() {
         if (Gdx.input.isKeyJustPressed(R)) gameField.resetLastAction();
-        if (Gdx.input.isKeyJustPressed(Q)) gameField.reset(GAME_FIELD_SIZE);
+        if (Gdx.input.isKeyJustPressed(Q)) gameField.reset(size);
         if (Gdx.input.isKeyJustPressed(UP)) gameField.changeField(ChangeFieldDestination.UP);
         if (Gdx.input.isKeyJustPressed(LEFT)) gameField.changeField(ChangeFieldDestination.LEFT);
         if (Gdx.input.isKeyJustPressed(RIGHT)) gameField.changeField(ChangeFieldDestination.RIGHT);
