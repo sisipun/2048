@@ -45,12 +45,12 @@ public class GameField {
         return texture;
     }
 
-    public GameField(int size) {
+    public GameField(GameFieldSize size) {
         reset(size);
     }
 
-    public void reset(int size) {
-        this.fieldMatrix = new GameBox[size][size];
+    public void reset(GameFieldSize fieldSize) {
+        this.fieldMatrix = new GameBox[fieldSize.getValue()][fieldSize.getValue()];
         generateBox(4);
         this.previousTurnFieldMatrix = copy(fieldMatrix);
         this.gameOver = false;
