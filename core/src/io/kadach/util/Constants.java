@@ -3,7 +3,6 @@ package io.kadach.util;
 
 public class Constants {
 
-    public static int GAME_FIELD_SIZE = 4;
     public static int GAME_SIZE = 800;
     public static int BOX_SIZE = GAME_SIZE / 5;
 
