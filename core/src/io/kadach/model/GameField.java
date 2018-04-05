@@ -2,6 +2,8 @@ package io.kadach.model;
 
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -11,11 +13,12 @@ import static io.kadach.model.ChangeFieldDestination.DOWN;
 import static io.kadach.model.ChangeFieldDestination.LEFT;
 import static io.kadach.model.ChangeFieldDestination.RIGHT;
 import static io.kadach.model.ChangeFieldDestination.UP;
+import static io.kadach.util.Constants.BOX_SIZE;
 import static java.lang.System.arraycopy;
 import static java.util.Arrays.deepEquals;
 import static org.apache.commons.lang3.ArrayUtils.reverse;
 
-public class GameField {
+public class GameField extends Actor {
 
     private GameBox[][] fieldMatrix;
     private GameBox[][] previousTurnFieldMatrix;
@@ -23,34 +26,48 @@ public class GameField {
     private int score;
     private int resetAttemptCount;
     private Texture texture;
+    private GameFieldSize size;
 
-
-    public GameBox[][] getFieldMatrix() {
-        return fieldMatrix;
-    }
-
-    public boolean isGameOver() {
-        return gameOver;
-    }
 
     public int getScore() {
         return score;
     }
 
-    public int getResetAttemptCount() {
-        return resetAttemptCount;
-    }
-
-    public Texture getTexture() {
-        return texture;
-    }
-
     public GameField(GameFieldSize size) {
-        reset(size);
+        this.size = size;
+        reset();
     }
 
-    public void reset(GameFieldSize fieldSize) {
-        this.fieldMatrix = new GameBox[fieldSize.getValue()][fieldSize.getValue()];
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        float width = getStage().getViewport().getWorldWidth();
+        float height = getStage().getViewport().getWorldHeight();
+
+        batch.draw(
+                texture,
+                0,
+                0,
+                width,
+                height
+        );
+        for (int i = 0; i < fieldMatrix.length; i++) {
+            for (int j = 0; j < fieldMatrix[i].length; j++) {
+                if (null == fieldMatrix[i][j]) {
+                    continue;
+                }
+                batch.draw(
+                        fieldMatrix[i][j].getType().getTexture(),
+                        ((width / 4) * (j + 1)) - (width / 8) - (BOX_SIZE / 2),
+                        ((height / 4) * (4 - i)) - (height / 8) - (BOX_SIZE / 2),
+                        BOX_SIZE,
+                        BOX_SIZE
+                );
+            }
+        }
+    }
+
+    public void reset() {
+        this.fieldMatrix = new GameBox[size.getValue()][size.getValue()];
         generateBox(4);
         this.previousTurnFieldMatrix = copy(fieldMatrix);
         this.gameOver = false;
