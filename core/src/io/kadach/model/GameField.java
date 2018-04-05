@@ -13,7 +13,6 @@ import static io.kadach.model.ChangeFieldDestination.DOWN;
 import static io.kadach.model.ChangeFieldDestination.LEFT;
 import static io.kadach.model.ChangeFieldDestination.RIGHT;
 import static io.kadach.model.ChangeFieldDestination.UP;
-import static io.kadach.util.Constants.BOX_SIZE;
 import static java.lang.System.arraycopy;
 import static java.util.Arrays.deepEquals;
 import static org.apache.commons.lang3.ArrayUtils.reverse;
@@ -24,7 +23,6 @@ public class GameField extends Actor {
     private GameBox[][] previousTurnFieldMatrix;
     private boolean gameOver;
     private int score;
-    private int resetAttemptCount;
     private Texture texture;
     private GameFieldSize size;
 
@@ -40,15 +38,12 @@ public class GameField extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        float width = getStage().getViewport().getWorldWidth();
-        float height = getStage().getViewport().getWorldHeight();
-
         batch.draw(
                 texture,
-                0,
-                0,
-                width,
-                height
+                getX(),
+                getY(),
+                getWidth(),
+                getHeight()
         );
         for (int i = 0; i < fieldMatrix.length; i++) {
             for (int j = 0; j < fieldMatrix[i].length; j++) {
@@ -57,10 +52,10 @@ public class GameField extends Actor {
                 }
                 batch.draw(
                         fieldMatrix[i][j].getType().getTexture(),
-                        ((width / 4) * (j + 1)) - (width / 8) - (BOX_SIZE / 2),
-                        ((height / 4) * (4 - i)) - (height / 8) - (BOX_SIZE / 2),
-                        BOX_SIZE,
-                        BOX_SIZE
+                        ((getWidth() / 4) * (j + 1)) - (getWidth() / 8) - (getWidth() / 10),
+                        ((getHeight() / 4) * (4 - i)) - (getHeight() / 8) - (getHeight() / 10),
+                        getWidth() / 5,
+                        getHeight() / 5
                 );
             }
         }
@@ -72,15 +67,11 @@ public class GameField extends Actor {
         this.previousTurnFieldMatrix = copy(fieldMatrix);
         this.gameOver = false;
         this.score = 0;
-        this.resetAttemptCount = 3;
         this.texture = new Texture("background.png");
     }
 
     public void resetLastAction() {
-        if (resetAttemptCount > 0 && !deepEquals(previousTurnFieldMatrix, fieldMatrix)) {
-            resetAttemptCount--;
-            fieldMatrix = copy(previousTurnFieldMatrix);
-        }
+        fieldMatrix = copy(previousTurnFieldMatrix);
     }
 
     public void changeField(ChangeFieldDestination destination) {

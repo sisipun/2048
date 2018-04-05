@@ -1,7 +1,6 @@
 package io.kadach.controll;
 
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ActorGestureListener;
 
@@ -23,7 +22,6 @@ public class GameFieldListener extends ActorGestureListener {
 
     @Override
     public void fling(InputEvent event, float velocityX, float velocityY, int button) {
-        Gdx.app.log("v", velocityX + ":" + velocityY);
         if (Math.abs(velocityX) > Math.abs(velocityY)) {
             if (velocityX > 0) {
                 gameField.changeField(RIGHT);
@@ -32,9 +30,9 @@ public class GameFieldListener extends ActorGestureListener {
             }
         } else {
             if (velocityY > 0) {
-                gameField.changeField(DOWN);
-            } else {
                 gameField.changeField(UP);
+            } else {
+                gameField.changeField(DOWN);
             }
         }
     }
